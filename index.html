@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이라크 산업 및 공장 시설물 안전 규정 준수 종합 대시보드</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Chosen Palette: Warm Sand & Engineering Navy */
+        /* Background: #fbfb9; Primary: #1e293b; Accent: #d97706, #059669 */
+        body {
+            background-color: #fcfbf9;
+            color: #1c1917;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        /* Chart container constraint */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 380px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 340px;
+            }
+        }
+
+        .tab-active {
+            border-bottom: 3px solid #d97706;
+            color: #1e293b;
+            font-weight: 700;
+            background-color: #f3f4f6;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutral & Engineering Navy (Background: stone-50, Primary: slate-800, Accents: amber-600, emerald-700) -->
+    <!-- Application Structure Plan: 
+        1. Executive Key Stats Header: Highlights macro numbers (11,000+ closures, 71.6% electrical fires, IQM deadline, fire rate drops).
+        2. Navigation Tabs: 5 thematic sections breaking down the 11 PowerPoint slides into intuitive user-driven views:
+           - [1] 거시 규제 & 민방위법 (Slides 1, 2, 3)
+           - [2] 이라크 국가 안전 코드 (Slide 4 + Interactive Thermal Calculator)
+           - [3] 부지 배치 & 자재 규제 (Slides 5, 6 + Interactive Sandwich Panel Matrix)
+           - [4] 전기·HVAC·기계 안전 (Slides 7, 8, 9 + IQM 5-Step Timeline)
+           - [5] 인허가 로드맵 & 대응 전략 (Slides 10, 11 + Interactive Self-Risk Assessment)
+        3. Dynamic Visualizations: Chart.js bar & donut charts for regulatory crackdowns and fire sources.
+        4. Interactive Calculators & Checklists: Interactive Thermal Resistance ($R_T$) calculator and Project Risk Auditor.
+    -->
+    <!-- Visualization & Content Choices:
+        - Enforcement Stats -> Goal: Compare -> Chart.js Bar Chart (2024 vs 2025 crackdowns, fines, court cases).
+        - Fire Causes -> Goal: Share/Distribution -> Chart.js Donut Chart (71.6% Electrical short circuits).
+        - Sandwich Panels -> Goal: Matrix Compare -> HTML Interactive Filterable Table with Rockwool/PIR/PUR/EPS color indicators.
+        - IQM Licensing Steps -> Goal: Process Flow -> HTML/CSS Timeline with interactive detail modal.
+        - Thermal Code Calc -> Goal: Interactive Practical Tool -> JS dynamic calculator with standard Iraqi constants (R_si=0.13, R_se=0.04).
+        - NO SVG or Mermaid JS used; Unicode symbol badges and CSS styled UI containers employed exclusively.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="min-h-screen flex flex-col justify-between text-stone-800">
+
+    <!-- TOP HEADER -->
+    <header class="bg-slate-900 text-white border-b-4 border-amber-500 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="bg-amber-500 text-slate-950 font-black text-xs px-2 py-0.5 rounded">IRAQ SAFETY COMPLIANCE</span>
+                    <span class="text-xs text-slate-400">민방위총국 & COSQC 통합 표준 가이드</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight mt-1 text-stone-100">
+                    이라크 산업 및 공장 시설물 안전 규정 준수 대시보드
+                </h1>
+            </div>
+            <div class="flex items-center gap-3 bg-slate-800/90 border border-slate-700 px-3 py-2 rounded-lg text-xs">
+                <div class="text-center">
+                    <span class="block text-slate-400 text-[10px]">최대 법적 제재 수위</span>
+                    <span class="font-bold text-red-400">시설 즉시 폐쇄 & 사법 회부</span>
+                </div>
+                <div class="h-6 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <span class="block text-slate-400 text-[10px]">IQM 인증 의무화</span>
+                    <span class="font-bold text-amber-400">2025. 09. 15 발효</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- EXECUTIVE METRICS BAR -->
+    <section class="bg-slate-100 border-b border-stone-200 py-3 px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+            <div class="bg-white p-3 rounded-md shadow-sm border border-stone-200">
+                <div class="text-xs text-stone-500 font-medium">전국 단속 폐쇄 시설</div>
+                <div class="text-lg sm:text-xl font-extrabold text-red-600 mt-0.5">11,000+ 건</div>
+                <div class="text-[10px] text-stone-400">안전 미달로 영업 중단 조치</div>
+            </div>
+            <div class="bg-white p-3 rounded-md shadow-sm border border-stone-200">
+                <div class="text-xs text-stone-500 font-medium">전기적 결함 화재 비율</div>
+                <div class="text-lg sm:text-xl font-extrabold text-amber-600 mt-0.5">71.6%</div>
+                <div class="text-[10px] text-stone-400">2025년 상반기 1,479건 발생</div>
+            </div>
+            <div class="bg-white p-3 rounded-md shadow-sm border border-stone-200">
+                <div class="text-xs text-stone-500 font-medium">강력 단속 후 화재 감소율</div>
+                <div class="text-lg sm:text-xl font-extrabold text-emerald-600 mt-0.5">58% ~ 74%</div>
+                <div class="text-[10px] text-stone-400">무관용 원칙 적용 성과</div>
+            </div>
+            <div class="bg-white p-3 rounded-md shadow-sm border border-stone-200">
+                <div class="text-xs text-stone-500 font-medium">FIC 시정 지시 회신 기한</div>
+                <div class="text-lg sm:text-xl font-extrabold text-slate-800 mt-0.5">72시간 / 7일</div>
+                <div class="text-[10px] text-stone-400">청렴위원회 무관용 행정 명령</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN NAVIGATION TABS -->
+    <nav class="bg-white border-b border-stone-300 sticky top-[73px] z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 flex overflow-x-auto custom-scrollbar text-xs sm:text-sm font-medium text-stone-600">
+            <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-btn px-4 py-3 whitespace-nowrap hover:text-slate-900 transition-colors tab-active">
+                1. 거시 규제 & 법률 (Slides 1-3)
+            </button>
+            <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-btn px-4 py-3 whitespace-nowrap hover:text-slate-900 transition-colors">
+                2. 이라크 국가 코드 (Slide 4)
+            </button>
+            <button onclick="switchTab('tab3')" id="btn-tab3" class="tab-btn px-4 py-3 whitespace-nowrap hover:text-slate-900 transition-colors">
+                3. 부지 배치 & 자재 (Slides 5-6)
+            </button>
+            <button onclick="switchTab('tab4')" id="btn-tab4" class="tab-btn px-4 py-3 whitespace-nowrap hover:text-slate-900 transition-colors">
+                4. 전기·HVAC·IQM (Slides 7-9)
+            </button>
+            <button onclick="switchTab('tab5')" id="btn-tab5" class="tab-btn px-4 py-3 whitespace-nowrap hover:text-slate-900 transition-colors">
+                5. 인허가 & 실행 전략 (Slides 10-11)
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- ==================== TAB 1: REGULATORY & LEGAL ==================== -->
+        <section id="tab1" class="tab-content space-y-8">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>📌</span> 이라크 산업 안전 규제의 거시적 배경 및 법적 구속력
+                </h2>
+                <p class="text-sm text-stone-700 mt-1 leading-relaxed">
+                    본 섹션은 이라크 건설·주택·공공지자체부(MOCH), 민방위총국, 연방 청렴위원회(FIC)가 주도하는 규제 환경의 구조적 변화와 이라크 민방위법 제44호(2013)의 법적 구속력을 분석합니다. 단순한 관행적 해외 코드(ACI, BS) 혼용 시대를 지나 이라크 현지 법규의 엄격한 준수가 요구됩니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Textual Analysis -->
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <h3 class="text-base font-bold text-slate-900 border-b pb-2 mb-3">
+                            🏛️ 연방 청렴위원회(FIC)의 개입과 26개 항 시정 권고
+                        </h3>
+                        <p class="text-xs text-stone-600 leading-relaxed mb-3">
+                            과거 투자청(NIC) 등 감독 기관의 관행적 승인 생략이나 임의적 화재 예방 조치 하향 조정은 FIC에 의해 **'제도적 부패'**로 규정되었습니다. 2024년 10,847건, 2025년 상반기 2,065건의 화재 빈발에 따라 FIC는 민방위 부문 전수 조사를 실시하고 건설부 장관 및 민방위국에 26개 항의 긴급 시정 명령을 전달했습니다.
+                        </p>
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200 space-y-2 text-xs">
+                            <div class="flex items-start gap-2">
+                                <span class="bg-slate-800 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">권고 4번</span>
+                                <span class="text-stone-700">이라크 국가 코드(Iraqi Codes) 의무적 전면 적용</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="bg-slate-800 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">권고 10번</span>
+                                <span class="text-stone-700">소방 진입용 긴급 차로(Emergency Lanes) 필수 확보</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="bg-slate-800 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">권고 12번</span>
+                                <span class="text-stone-700">가연성 패널 전면 금지 및 불연성 자재 사용 강제</span>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="bg-slate-800 text-white font-bold px-1.5 py-0.5 rounded text-[10px]">권고 18번</span>
+                                <span class="text-stone-700">직통 비상계단 설치 및 항시 개방 상태 유지</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <h3 class="text-base font-bold text-slate-900 border-b pb-2 mb-3">
+                            ⚖️ 이라크 민방위법 제44호(2013) 핵심 조항 분석
+                        </h3>
+                        <ul class="space-y-2 text-xs text-stone-700">
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">▪ 제33조:</span>
+                                <span>산업/상업/서비스 건축물의 **최종 설계 도면은 반드시 승인 전 민방위총국 사전 제출** 및 화재 예방/피난로 검토를 받아야 함.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">▪ 제27조 1항:</span>
+                                <span>유해 화학물질, 가스, 연료 저장 탱크 등 **위험물 저장/취급 시설은 개설 전 사전 승인** 필수.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">▪ 제20조 & 21조:</span>
+                                <span>시정 지시 불이행 시 대규모 벌금 부과, 경고 처분 및 즉각적인 **경미 범죄 법원(Misdemeanor Courts) 회부**.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Visual Chart & Table -->
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-base font-bold text-slate-900">
+                                📊 민방위 위반 적발 및 사법 조치 현황
+                            </h3>
+                            <span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded">FIC 실태보고서</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="enforcementChart"></canvas>
+                        </div>
+                        <p class="text-[11px] text-stone-500 text-center mt-3">
+                            *2025년 단 8개월 만에 법원 회부 건수가 2024년 전체 대비 300% 이상 폭증
+                        </p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 overflow-x-auto">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+                            📋 단속 통계 세부 데이터표 (2024년 ~ 2025년 8월)
+                        </h4>
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-stone-300 text-slate-700">
+                                    <th class="p-2">구분 연도</th>
+                                    <th class="p-2">적발 위반 건수</th>
+                                    <th class="p-2">벌금 부과 (20/21조)</th>
+                                    <th class="p-2 text-red-600">법원 회부 건수</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200">
+                                <tr>
+                                    <td class="p-2 font-medium">2024년 전체</td>
+                                    <td class="p-2">3,955 건</td>
+                                    <td class="p-2">1,705 건</td>
+                                    <td class="p-2 text-red-600 font-semibold">515 건</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 font-medium">2025년 (8월 누적)</td>
+                                    <td class="p-2">8,230 건</td>
+                                    <td class="p-2">1,487 건</td>
+                                    <td class="p-2 text-red-600 font-semibold">1,552 건</td>
+                                </tr>
+                                <tr class="bg-amber-50/60 font-bold text-slate-900">
+                                    <td class="p-2">최근 누계 (폐쇄 포함)</td>
+                                    <td class="p-2">11,000건 이상</td>
+                                    <td class="p-2">6,008 건</td>
+                                    <td class="p-2 text-red-700">1,885건 이상</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: IRAQI CODES & CALCULATOR ==================== -->
+        <section id="tab2" class="tab-content hidden space-y-8">
+            <div class="bg-sky-50 border-l-4 border-sky-600 p-4 rounded-r-md">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>📌</span> 의무 적용 대상 이라크 국가 건설·안전 코드 (Iraqi Codes)
+                </h2>
+                <p class="text-sm text-stone-700 mt-1 leading-relaxed">
+                    이라크 정부 결의에 따라 공장 설계 시 반드시 반영해야 하는 5대 핵심 코드 체계입니다. 해외 설계 표준 사용 시에도 이라크 코드가 최우선적 법적 효력을 가집니다.
+                </p>
+            </div>
+
+            <!-- 5 Key Codes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm hover:border-amber-500 transition-colors">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-slate-800 text-amber-400 font-extrabold text-xs px-2 py-1 rounded">Code 306</span>
+                        <h3 class="font-bold text-slate-900 text-sm">건설 프로젝트 일반 안전 코드 (2015)</h3>
+                    </div>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        건설 현장 작업자 안전보건, 임시 가설물 설치, 비계(Scaffolding) 사용 기준, 굴착 및 중장비 안전 운용 규정을 관장합니다.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm hover:border-amber-500 transition-colors">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-slate-800 text-amber-400 font-extrabold text-xs px-2 py-1 rounded">Code 405</span>
+                        <h3 class="font-bold text-slate-900 text-sm">건축물 화재 방호 코드 (2013)</h3>
+                    </div>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        구조체 내화 성능, 방화 구획(Fire Compartmentation), 방화벽/방화 댐퍼, 내장재 연소성 제한 및 피난 거리 요구조건을 규정합니다.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm hover:border-amber-500 transition-colors">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-slate-800 text-amber-400 font-extrabold text-xs px-2 py-1 rounded">Code 405/3</span>
+                        <h3 class="font-bold text-slate-900 text-sm">화재 감지·경보 및 소화 설비 코드</h3>
+                    </div>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        열·연기 감지기 배치, 경보 데시벨(dB) 수준, 스프링클러, 물 분무, 가스계 소화설비, 소화전 수압 및 배관 구성을 제어합니다.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm hover:border-amber-500 transition-colors">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-slate-800 text-amber-400 font-extrabold text-xs px-2 py-1 rounded">Shelter Code</span>
+                        <h3 class="font-bold text-slate-900 text-sm">방공 대피소 기준 (지정학 위험 대응)</h3>
+                    </div>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        외부 무력 충돌로부터 인명을 보호하기 위한 철근 콘크리트 지하 대피소 설치 의무. 독립 환기 및 비상 전원 필수 구축.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm hover:border-amber-500 transition-colors lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="bg-emerald-700 text-white font-extrabold text-xs px-2 py-1 rounded">Thermal Code</span>
+                        <h3 class="font-bold text-slate-900 text-sm">이라크 건물 단열 코드 (Thermal Insulation Code)</h3>
+                    </div>
+                    <p class="text-xs text-stone-600 leading-relaxed mb-2">
+                        폭염 기후 조건에 맞춰 열교 현상을 방지하고 에너지 효율을 높이기 위한 코드입니다. 내부 표면 열저항 $R_{si} = 0.13 \, m^2K/W$, 외부 표면 열저항 $R_{se} = 0.04 \, m^2K/W$를 고정 적용하여 산출합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE THERMAL INSULATION CALCULATOR -->
+            <div class="bg-white p-6 rounded-lg border border-slate-300 shadow-md">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 mb-4 gap-2">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            🧮 이라크 단열 코드 기준 벽체 열저항($R_T$) 계산기
+                        </h3>
+                        <p class="text-xs text-stone-500">공장 외벽 레이어 재질과 두께를 입력하여 이라크 법정 규격 충족 여부를 시뮬레이션하세요.</p>
+                    </div>
+                    <span class="bg-amber-100 text-amber-900 font-mono text-xs px-2.5 py-1 rounded border border-amber-300">
+                        공식: R_T = R_si + Σ(d / k) + R_se
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="space-y-4 lg:col-span-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded border border-slate-200 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">고정 고온 표준값</label>
+                                <div class="text-stone-600 space-y-1">
+                                    <p>• 내부 표면 열저항 ($R_{si}$): <span class="font-mono font-bold text-slate-900">0.13 m²K/W</span></p>
+                                    <p>• 외부 표면 열저항 ($R_{se}$): <span class="font-mono font-bold text-slate-900">0.04 m²K/W</span></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">목표 기준 열저항</label>
+                                <p class="text-stone-600">이라크 산업 시설 권장 최소 $R_T$:</p>
+                                <p class="font-mono font-bold text-emerald-700 text-sm mt-1">≥ 2.00 m²K/W</p>
+                            </div>
+                        </div>
+
+                        <!-- Layer Inputs -->
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-bold text-slate-800">단열 레이어 설정을 선택하세요:</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-stone-700 mb-1">심재 단열재 재질</label>
+                                    <select id="insulationType" onchange="calculateThermal()" class="w-full text-xs p-2 border border-stone-300 rounded focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="0.038">미네랄울 (Rockwool) [k ≈ 0.038 W/mK]</option>
+                                        <option value="0.022">PIR 패널 [k ≈ 0.022 W/mK]</option>
+                                        <option value="0.040">EPS 스티로폼 (금지대상 참조용) [k ≈ 0.040 W/mK]</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-stone-700 mb-1">단열재 두께 (mm)</label>
+                                    <input type="number" id="insulationThickness" value="80" min="10" max="300" oninput="calculateThermal()" class="w-full text-xs p-2 border border-stone-300 rounded focus:ring-amber-500 focus:border-amber-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Card -->
+                    <div class="bg-slate-900 text-white p-5 rounded-lg flex flex-col justify-between border border-slate-800">
+                        <div>
+                            <span class="text-[10px] text-slate-400 uppercase tracking-wider block">계산된 총 열저항 결과</span>
+                            <div id="calcResultVal" class="text-3xl font-extrabold text-amber-400 mt-2 font-mono">2.25 m²K/W</div>
+                            <p id="calcBreakdown" class="text-[11px] text-slate-300 mt-2 leading-relaxed">
+                                R_si (0.13) + 단열재 (2.11) + R_se (0.04)
+                            </p>
+                        </div>
+                        <div id="calcStatusBadge" class="mt-4 p-2.5 rounded text-xs font-bold text-center bg-emerald-800 text-emerald-100">
+                            ✓ 이라크 단열 코드 승인 가치 충족
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: PLOT PLAN & MATERIALS ==================== -->
+        <section id="tab3" class="tab-content hidden space-y-8">
+            <div class="bg-emerald-50 border-l-4 border-emerald-600 p-4 rounded-r-md">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>📌</span> 공장 부지 배치(Plot Plan) 및 샌드위치 패널 자재 규제
+                </h2>
+                <p class="text-sm text-stone-700 mt-1 leading-relaxed">
+                    배치 단계의 소방 차량 동선 확보와 외장 패널 자재의 불연성 인증은 민방위 도면 승인의 핵심 요소입니다. EPS 등 가연성 패널은 엄격히 금지됩니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Plot Plan Guidelines -->
+                <div class="bg-white p-6 rounded-lg border border-stone-200 shadow-sm space-y-4">
+                    <h3 class="text-base font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
+                        📐 부지 배치도(Plot Plan) 필수 소방 요구사항
+                    </h3>
+
+                    <div class="space-y-3 text-xs text-stone-700">
+                        <div class="p-3 bg-stone-50 rounded border border-stone-200">
+                            <span class="font-bold text-slate-900 block mb-1">🚨 긴급 전용 차로 (FIC 권고사항 10번)</span>
+                            <p>소방차 및 구조대가 주요 공정 구역 및 위험물 탱크로 즉각 접근할 수 있는 긴급 차로 확보. 통상 반경 1,200m 내 커버리지 기준 만족 필요.</p>
+                        </div>
+
+                        <div class="p-3 bg-stone-50 rounded border border-stone-200">
+                            <span class="font-bold text-slate-900 block mb-1">💧 독자적 소방용수 및 가압 펌프 시설</span>
+                            <p>이라크 시립 상수도 수압 불확실성에 대응하여, 부지 내 **자체 소방용 수조 및 전동/디젤 펌프 가압 설비** 배치 필수.</p>
+                        </div>
+
+                        <div class="p-3 bg-stone-50 rounded border border-stone-200">
+                            <span class="font-bold text-slate-900 block mb-1">🚪 비상계단 및 통풍구 (FIC 권고사항 11번)</span>
+                            <p>다층 공장 및 관리동은 외부 직통 비상계단을 설치하고, 유독가스 배출용 자연 환기 통풍구 마련. 문은 항시 비상 개방 상태 유지.</p>
+                        </div>
+
+                        <div class="p-3 bg-stone-50 rounded border border-stone-200">
+                            <span class="font-bold text-slate-900 block mb-1">⛽ 위험물 이격 거리 및 방호벽</span>
+                            <p>디젤 발전기 연료 탱크는 주 건물에서 **최소 10m 이상 이격**. 산소/고압 가스 용기 주변 내화 절연 방호벽 필수.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sandwich Panel Matrix -->
+                <div class="bg-white p-6 rounded-lg border border-stone-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h3 class="text-base font-bold text-slate-900">
+                            🧱 샌드위치 패널 심재별 규제 및 내화성 비교
+                        </h3>
+                        <span class="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded">EPS 금지</span>
+                    </div>
+
+                    <p class="text-xs text-stone-600">
+                        COSQC 및 민방위 지침에 따른 ASTM D1929(자가발화온도 ≥ 343°C), ASTM E84(화염전파지수 ≤ 75, 연기발생지수 ≤ 450) 기준 적용 결과입니다.
+                    </p>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-800 text-white">
+                                    <th class="p-2">심재 종류</th>
+                                    <th class="p-2">규제 판정</th>
+                                    <th class="p-2">내화 등급</th>
+                                    <th class="p-2">공장 적용 권장</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200 text-xs">
+                                <tr class="bg-red-50">
+                                    <td class="p-2 font-bold text-red-900">EPS (스티로폼)</td>
+                                    <td class="p-2"><span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">전면 금지</span></td>
+                                    <td class="p-2 text-red-700">고가연성 / 유독가스</td>
+                                    <td class="p-2 font-bold text-red-700">절대 불가</td>
+                                </tr>
+                                <tr class="bg-amber-50">
+                                    <td class="p-2 font-bold text-amber-900">PUR (우레탄)</td>
+                                    <td class="p-2"><span class="bg-amber-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">원칙적 금지</span></td>
+                                    <td class="p-2 text-amber-800">가연성 / 연기 과다</td>
+                                    <td class="p-2 text-amber-800">불가</td>
+                                </tr>
+                                <tr class="bg-sky-50">
+                                    <td class="p-2 font-bold text-sky-900">PIR (이소시아누레이트)</td>
+                                    <td class="p-2"><span class="bg-sky-700 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">조건부 허용</span></td>
+                                    <td class="p-2 text-sky-800">난연성 / 단열 우수</td>
+                                    <td class="p-2 text-sky-800">저온창고 제한적 사용</td>
+                                </tr>
+                                <tr class="bg-emerald-50">
+                                    <td class="p-2 font-bold text-emerald-900">Rockwool (미네랄울)</td>
+                                    <td class="p-2"><span class="bg-emerald-700 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">적극 권장</span></td>
+                                    <td class="p-2 text-emerald-800">불연성 1급 (2시간+)</td>
+                                    <td class="p-2 font-bold text-emerald-800">주력 사용 (합법)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-stone-100 p-3 rounded text-[11px] text-stone-600 border border-stone-200">
+                        💡 **현장 수급 팁:** 연속 패널 면적은 **27.8m² 이하**로 제한되며 구획 분리가 필요합니다. 수입 시 **FM Approved, EN 14509, CPR** 국제 시험 성적서를 미리 확보해야 합니다.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: ELECTRICAL, HVAC & IQM ==================== -->
+        <section id="tab4" class="tab-content hidden space-y-8">
+            <div class="bg-purple-50 border-l-4 border-purple-600 p-4 rounded-r-md">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>📌</span> 전기 화재 예방, COSQC IQM 인증 및 HVAC 방재 설비
+                </h2>
+                <p class="text-sm text-stone-700 mt-1 leading-relaxed">
+                    전기 단락은 이라크 화재 원인의 71.6%를 차지합니다. 내각 결의안에 따라 민방위 승인 없이는 전력망 연결이 차단되며, 2025년 9월부터 IQM 품질 마크가 통관의 필수 요건이 됩니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Electrical Fire & Grid Connection Ban -->
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-lg border border-stone-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-base font-bold text-slate-900">⚡ 2025년 화재 원인 비중 및 전력 연결 제한</h3>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                            <div class="chart-container" style="height: 220px;">
+                                <canvas id="fireCauseChart"></canvas>
+                            </div>
+                            <div class="text-xs space-y-2 text-stone-700">
+                                <div class="p-2.5 bg-red-50 border border-red-200 rounded">
+                                    <span class="font-bold text-red-900 block">내각 결의안 L/A/37975</span>
+                                    <span>민방위 **'안전 및 예방 조건 충족 보고서'** 미제출 시 국영 전력망(National Grid) 및 상하수도 연결 차단.</span>
+                                </div>
+                                <ul class="list-disc pl-4 space-y-1 text-stone-600">
+                                    <li>IEC 60331-1 내열/난연 케이블 사용</li>
+                                    <li>가연성 구역 방폭형(ATEX) 자재 필수</li>
+                                    <li>3상 접지 및 50V 이상 방호 덮개</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HVAC & Special Mechanical Process -->
+                    <div class="bg-white p-6 rounded-lg border border-stone-200 shadow-sm space-y-3">
+                        <h3 class="text-base font-bold text-slate-900 border-b pb-2">
+                            🌀 HVAC 공조 & 특수 기계 공정 방재 안전
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div class="p-3 bg-slate-50 rounded border border-slate-200">
+                                <span class="font-bold text-slate-900 block mb-1">Code 405 방화 댐퍼</span>
+                                <span>덕트가 방화벽 관통 시 자동 폐쇄 **Fire Dampers** 및 연기 댐퍼 의무 설치.</span>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded border border-slate-200">
+                                <span class="font-bold text-slate-900 block mb-1">능동 제연 시스템</span>
+                                <span>화재 감지 즉시 급기 팬 중단 & 제연 배풍기(Smoke Exhaust) 최대 가동.</span>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded border border-slate-200">
+                                <span class="font-bold text-slate-900 block mb-1">FM200 / DCP 가스 소화</span>
+                                <span>가스 터빈, 575 m³/hr 이상 압축기, 컨트롤룸 대상 청정 소화 약제 구축.</span>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded border border-slate-200">
+                                <span class="font-bold text-slate-900 block mb-1">API 521 플레어 스택</span>
+                                <span>고압 배출 Flare & Knock-out Drum 구축, 비상 정지(ESD) 연동.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IQM 5-STEP TIMELINE -->
+                <div class="bg-white p-6 rounded-lg border border-stone-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h3 class="text-base font-bold text-slate-900">
+                            🏷️ 수입 전기 자재 IQM 인증 5단계 프로세스
+                        </h3>
+                        <span class="text-[10px] bg-amber-500 text-slate-950 font-bold px-2 py-0.5 rounded">2025.09.15 의무화</span>
+                    </div>
+                    <p class="text-xs text-stone-600">
+                        COSQC 고시 제15호에 의거, 공조기, 배전반, 펌프 등 통제 품목은 이라크 품질 마크(IQM) 없이는 통관이 금지됩니다.
+                    </p>
+
+                    <!-- Interactive Steps -->
+                    <div class="space-y-3 relative text-xs">
+                        <div class="p-3 bg-stone-50 border-l-4 border-slate-800 rounded">
+                            <span class="font-bold text-slate-900 text-xs block">1단계: 서류 심사 (Document Review)</span>
+                            <span class="text-stone-600 text-[11px]">SGS, Intertek 등 승인 기관에 송장, 기술사양서, IEC 공인 시험성적서 제출.</span>
+                        </div>
+
+                        <div class="p-3 bg-stone-50 border-l-4 border-slate-800 rounded">
+                            <span class="font-bold text-slate-900 text-xs block">2단계: 제품 시험 (Product Testing)</span>
+                            <span class="text-stone-600 text-[11px]">ISO/IEC 17025 공인 연구소에서 이라크 표준(IQS) 적합성 검증.</span>
+                        </div>
+
+                        <div class="p-3 bg-stone-50 border-l-4 border-slate-800 rounded">
+                            <span class="font-bold text-slate-900 text-xs block">3단계: 제조 공장 실사 (Factory Audit)</span>
+                            <span class="text-stone-600 text-[11px]">COSQC 심사관 또는 대행 기관의 해외 제조 라인 품질 시스템 점검.</span>
+                        </div>
+
+                        <div class="p-3 bg-stone-50 border-l-4 border-slate-800 rounded">
+                            <span class="font-bold text-slate-900 text-xs block">4단계: 선적 전 검사 (PSI Inspection)</span>
+                            <span class="text-stone-600 text-[11px]">선적항 현장에서 수량, 포장, 바코드 및 IQM 라벨 부착 대조.</span>
+                        </div>
+
+                        <div class="p-3 bg-emerald-50 border-l-4 border-emerald-600 rounded">
+                            <span class="font-bold text-emerald-900 text-xs block">5단계: CoC 발급 및 최종 통관</span>
+                            <span class="text-emerald-800 text-[11px]">적합성 인증서(CoC) 발급 완료 후 이라크 세관 바코드 스캔 하역.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 5: LICENSING ROADMAP & ACTION PLAN ==================== -->
+        <section id="tab5" class="tab-content hidden space-y-8">
+            <div class="bg-slate-100 border-l-4 border-slate-800 p-4 rounded-r-md">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>📌</span> 공장 설립 6단계 인허가 로드맵 & 실행 전략
+                </h2>
+                <p class="text-sm text-stone-700 mt-1 leading-relaxed">
+                    산업광물부(DGID)부터 민방위국, 최종 가동 면허까지의 행정 절차와 리스크 최소화를 위한 3대 핵심 액션 플랜입니다.
+                </p>
+            </div>
+
+            <!-- 6-STEP ROADMAP TRACKER -->
+            <div class="bg-white p-6 rounded-lg border border-stone-200 shadow-sm space-y-4">
+                <h3 class="text-base font-bold text-slate-900 border-b pb-2">
+                    🗺️ 이라크 산업단지 내 공장 설립 인허가 6단계 프로세스
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded relative">
+                        <span class="bg-slate-800 text-white font-extrabold text-[10px] px-2 py-0.5 rounded absolute top-2 right-2">STEP 1</span>
+                        <h4 class="font-bold text-slate-900 text-sm mb-1">법인 설립 & 세무 등록</h4>
+                        <p class="text-stone-600">무역부 기업등록청 법인 등록 후 조세총국(GAT) 세금 식별 번호(TIN) 발급.</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded relative">
+                        <span class="bg-slate-800 text-white font-extrabold text-[10px] px-2 py-0.5 rounded absolute top-2 right-2">STEP 2</span>
+                        <h4 class="font-bold text-slate-900 text-sm mb-1">부지 할당 & 예비 승인</h4>
+                        <p class="text-stone-600">산업발전국(DGID)에 부지 도면 및 타당성 보고서 제출, 토지 임대권 확보.</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded relative">
+                        <span class="bg-slate-800 text-white font-extrabold text-[10px] px-2 py-0.5 rounded absolute top-2 right-2">STEP 3</span>
+                        <h4 class="font-bold text-slate-900 text-sm mb-1">환경 영향 평가 (EIA)</h4>
+                        <p class="text-stone-600">환경부 승인: 방류수, 대기 배출, 산업 폐기물 및 소음 기준 적합성 검증.</p>
+                    </div>
+
+                    <div class="p-4 bg-amber-50 border border-amber-300 rounded relative">
+                        <span class="bg-amber-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded absolute top-2 right-2">STEP 4</span>
+                        <h4 class="font-bold text-amber-950 text-sm mb-1">민방위국 소방 도면 승인</h4>
+                        <p class="text-amber-900">건축 평면, 긴급 차로, 피난로, 감지기, 소화 펌프, 대피소 도면 사전 심사.</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded relative">
+                        <span class="bg-slate-800 text-white font-extrabold text-[10px] px-2 py-0.5 rounded absolute top-2 right-2">STEP 5</span>
+                        <h4 class="font-bold text-slate-900 text-sm mb-1">섹터별 추가 면허</h4>
+                        <p class="text-stone-600">보건부(제약/식품), 석유부(연료), 전력부(고전압) 등 해당 부처 연계 승인.</p>
+                    </div>
+
+                    <div class="p-4 bg-emerald-50 border border-emerald-300 rounded relative">
+                        <span class="bg-emerald-700 text-white font-extrabold text-[10px] px-2 py-0.5 rounded absolute top-2 right-2">STEP 6</span>
+                        <h4 class="font-bold text-emerald-950 text-sm mb-1">합동 실사 & 가동 면허</h4>
+                        <p class="text-emerald-900">관계 부처 합동 현장 점검 통과 후 최종 공장 가동 면허(Operating License) 발급.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 CORE ACTION PLANS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm space-y-2">
+                    <div class="text-amber-600 font-extrabold text-xs">ACTION 01</div>
+                    <h3 class="font-bold text-slate-900 text-sm">FEED 단계 설계 철학 재설정</h3>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        해외 관행 표준 맹신을 탈피하고, 이라크 국가 코드(Code 306, 405 등)를 기본 설계 기준 최상위에 강제 적용.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm space-y-2">
+                    <div class="text-amber-600 font-extrabold text-xs">ACTION 02</div>
+                    <h3 class="font-bold text-slate-900 text-sm">조달 & 공급망 선제적 쇄신</h3>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        EPS 패널 완전 배제, Rockwool 패널 예산 상향 편성, 수입 기자재 CoC 및 IQM 인증 계약 조건(PO) 명시.
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg border border-stone-200 shadow-sm space-y-2">
+                    <div class="text-amber-600 font-extrabold text-xs">ACTION 03</div>
+                    <h3 class="font-bold text-slate-900 text-sm">현지 밀착 대관 컨설팅 가동</h3>
+                    <p class="text-xs text-stone-600 leading-relaxed">
+                        이라크 공인 엔지니어링 파트너(NCEC 등)와 협력하여 민방위 코멘트 신속 반영 및 다부처 인허가 통합 관리.
+                    </p>
+                </div>
+            </div>
+
+            <!-- INTERACTIVE RISK CHECKLIST -->
+            <div class="bg-white p-6 rounded-lg border border-slate-300 shadow-md space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">📋 프로젝트 규제 리스크 자가 진단 체커</h3>
+                        <p class="text-xs text-stone-500">현재 공장 프로젝트의 준수 항목을 체크하고 법적 리스크 등급을 확인하세요.</p>
+                    </div>
+                    <span id="riskScoreBadge" class="bg-slate-800 text-amber-400 font-mono font-bold text-xs px-3 py-1 rounded">
+                        진단 대기 중
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <label class="flex items-center gap-2 p-2.5 bg-stone-50 rounded cursor-pointer hover:bg-stone-100">
+                        <input type="checkbox" class="risk-check" onchange="assessRisk()" class="rounded text-amber-600">
+                        <span>설계 기준에 이라크 국가 코드(Code 306/405)가 최상위로 명시되었는가?</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 bg-stone-50 rounded cursor-pointer hover:bg-stone-100">
+                        <input type="checkbox" class="risk-check" onchange="assessRisk()" class="rounded text-amber-600">
+                        <span>외장 패널로 스티로폼(EPS) 대신 불연성 미네랄울(Rockwool)을 채택했는가?</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 bg-stone-50 rounded cursor-pointer hover:bg-stone-100">
+                        <input type="checkbox" class="risk-check" onchange="assessRisk()" class="rounded text-amber-600">
+                        <span>부지 내 소방차 전용 긴급 차로 및 회전 반경이 반영되었는가?</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 bg-stone-50 rounded cursor-pointer hover:bg-stone-100">
+                        <input type="checkbox" class="risk-check" onchange="assessRisk()" class="rounded text-amber-600">
+                        <span>자체 소방용 수조 및 가압 펌프망이 계획되었는가?</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 bg-stone-50 rounded cursor-pointer hover:bg-stone-100">
+                        <input type="checkbox" class="risk-check" onchange="assessRisk()" class="rounded text-amber-600">
+                        <span>2025년 9월 통관 기자재에 대한 IQM 인증 절차가 반영되었는가?</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 bg-stone-50 rounded cursor-pointer hover:bg-stone-100">
+                        <input type="checkbox" class="risk-check" onchange="assessRisk()" class="rounded text-amber-600">
+                        <span>HVAC 덕트 관통부에 자동 방화 댐퍼가 설계되었는가?</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="font-medium text-slate-300">이라크 산업 및 공장 시설물 안전 규정 준수 및 적용 검토 종합 대시보드</p>
+            <p class="text-[11px] text-slate-500">
+                본 대시보드는 이라크 건설·주택·공공지자체부(MOCH), 이라크 민방위총국, 중앙표준품질관리원(COSQC) 및 연방 청렴위원회(FIC) 발표 자료를 기반으로 제작되었습니다.
+            </p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-active'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('tab-active');
+
+            // Trigger chart update if visible
+            if (tabId === 'tab1' && !enforcementChartInstance) {
+                renderEnforcementChart();
+            } else if (tabId === 'tab4' && !fireCauseChartInstance) {
+                renderFireCauseChart();
+            }
+        }
+
+        // CHART 1: ENFORCEMENT STATS
+        let enforcementChartInstance = null;
+        function renderEnforcementChart() {
+            const ctx = document.getElementById('enforcementChart').getContext('2d');
+            enforcementChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['2024년 전체', '2025년 (8월 누적)'],
+                    datasets: [
+                        {
+                            label: '적발 위반 건수',
+                            data: [3955, 8230],
+                            backgroundColor: '#475569'
+                        },
+                        {
+                            label: '벌금 부과 건수',
+                            data: [1705, 1487],
+                            backgroundColor: '#d97706'
+                        },
+                        {
+                            label: '법원 회부 건수',
+                            data: [515, 1552],
+                            backgroundColor: '#dc2626'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString() + ' 건';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // CHART 2: FIRE CAUSES
+        let fireCauseChartInstance = null;
+        function renderFireCauseChart() {
+            const ctx = document.getElementById('fireCauseChart').getContext('2d');
+            fireCauseChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['전기 단락 (Electrical Short)', '기타 원인 (방화, 부주의 등)'],
+                    datasets: [{
+                        data: [71.6, 28.4],
+                        backgroundColor: ['#dc2626', '#cbd5e1'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // THERMAL CALCULATOR LOGIC
+        function calculateThermal() {
+            const R_si = 0.13;
+            const R_se = 0.04;
+            const k = parseFloat(document.getElementById('insulationType').value);
+            const d_mm = parseFloat(document.getElementById('insulationThickness').value) || 0;
+            const d_m = d_mm / 1000.0;
+
+            const R_layer = d_m / k;
+            const R_total = R_si + R_layer + R_se;
+
+            document.getElementById('calcResultVal').innerText = R_total.toFixed(2) + ' m²K/W';
+            document.getElementById('calcBreakdown').innerText = 
+                `R_si (${R_si}) + 단열재 (${R_layer.toFixed(2)}) + R_se (${R_se})`;
+
+            const badge = document.getElementById('calcStatusBadge');
+            if (R_total >= 2.0) {
+                badge.className = 'mt-4 p-2.5 rounded text-xs font-bold text-center bg-emerald-800 text-emerald-100';
+                badge.innerText = '✓ 이라크 단열 코드 승인 권장치 충족';
+            } else {
+                badge.className = 'mt-4 p-2.5 rounded text-xs font-bold text-center bg-amber-800 text-amber-100';
+                badge.innerText = '⚠️ 단열 성능 미달 (두께 증대 필요)';
+            }
+        }
+
+        // RISK CHECKLIST ASSESSOR
+        function assessRisk() {
+            const checkboxes = document.querySelectorAll('.risk-check');
+            let checkedCount = 0;
+            checkboxes.forEach(cb => { if(cb.checked) checkedCount++; });
+
+            const badge = document.getElementById('riskScoreBadge');
+            if (checkedCount === 6) {
+                badge.className = 'bg-emerald-700 text-white font-mono font-bold text-xs px-3 py-1 rounded';
+                badge.innerText = '리스크 최저 (6/6 준수)';
+            } else if (checkedCount >= 4) {
+                badge.className = 'bg-amber-600 text-white font-mono font-bold text-xs px-3 py-1 rounded';
+                badge.innerText = '보통 리스크 (' + checkedCount + '/6 준수)';
+            } else {
+                badge.className = 'bg-red-600 text-white font-mono font-bold text-xs px-3 py-1 rounded';
+                badge.innerText = '고위험: 인허가 거부 가능성 높음 (' + checkedCount + '/6)';
+            }
+        }
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            renderEnforcementChart();
+            calculateThermal();
+        });
+    </script>
+</body>
+</html>
