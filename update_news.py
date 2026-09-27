@@ -18,8 +18,8 @@ query = urllib.parse.quote("이라크 건설 안전")
 url = f"https://openapi.naver.com/v1/search/news.json?query={query}&display=3&sort=date"
 
 req = urllib.request.Request(url)
-req.add_header("X-Naver-Client-Id", NAVER_ID)
-req.add_header("X-Naver-Client-Secret", NAVER_SECRET)
+req.add_header("0Hna0veoqRLZ3xiu19lm", NAVER_ID)
+req.add_header("XHURNB2C9T", NAVER_SECRET)
 
 response = urllib.request.urlopen(req)
 news_items = json.loads(response.read().decode('utf-8')).get('items', [])
