@@ -6,8 +6,8 @@ from datetime import datetime
 import google.generativeai as genai
 
 # 환경변수 로드
-NAVER_ID = os.environ.get("NAVER_CLIENT_ID")
-NAVER_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
+NAVER_ID = os.environ.get("0Hna0veoqRLZ3xiu19lm")
+NAVER_SECRET = os.environ.get("XHURNB2C9T")
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
 genai.configure(api_key=GEMINI_KEY)
