@@ -27,8 +27,8 @@ jobs:
 
       - name: 뉴스 크롤링 및 AI 요약 스크립트 실행
         env:
-          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          NAVER_CLIENT_ID: ${{ 0Hna0veoqRLZ3xiu19lm }}
+          NAVER_CLIENT_SECRET: ${{ XHURNB2C9T }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python update_news.py
